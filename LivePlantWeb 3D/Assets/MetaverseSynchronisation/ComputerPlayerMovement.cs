@@ -31,7 +31,7 @@ public class ComputerPlayerMovement : MonoBehaviour
             if (Input.GetMouseButton(2) || Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftControl))
             {
                 Vector3 delta = Input.mousePosition - mousePos;
-                thirdPersonCamera.transform.Translate(new Vector3(-delta.x, 0, -delta.y) * Time.deltaTime * thirdPersonCamera.transform.position.y * 0.5f);
+                thirdPersonCamera.transform.Translate(new Vector3(-delta.x, 0, -delta.y) * Time.deltaTime * Mathf.Clamp(thirdPersonCamera.transform.position.y * 0.5f, 5, 20));
             }
             if (Input.GetKey(KeyCode.W))
             {

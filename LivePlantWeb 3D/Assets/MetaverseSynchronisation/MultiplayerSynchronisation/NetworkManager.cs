@@ -12,11 +12,17 @@ public class NetworkManager : MonoBehaviour
     public List<SynchronizedObject> synchronizedObjects;
     public List<SynchronizedObject> waitForIDResponse;
 
+    public enum Platform
+    {
+        WebGL, Windows, Android
+    }
+    public Platform platform = Platform.WebGL;
 
     public List<SynchronizedObject> multiplayerObjectDatabase;
 
     public string clientID = "";
     public string userName = "Player";
+    public int clientPort = 5555;
 
     // Start is called before the first frame update
     public void Start()
@@ -111,17 +117,24 @@ public class NetworkManager : MonoBehaviour
 
     public void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(0, 0, 200, 300));
+        GUILayout.BeginArea(new Rect(0, 0, Screen.width, 300));
+        GUILayout.BeginHorizontal();
         GUILayout.Box(guiText);
+        if (GUILayout.Button("Quit"))
+        {
+            sender.Request_Unregister();
+            Application.Quit();
+        }
+        GUILayout.EndHorizontal();
         if (!receiver.initialized)
         {
             userName = GUILayout.TextField(userName);
+            int.TryParse(GUILayout.TextField(clientPort.ToString()), out clientPort);
             if (GUILayout.Button("Initialize Network"))
             {
-                guiText += "\nInitializing 1";
                 sender.Initialize();
                 receiver.Initialize();               
-                guiText += "\nInitializing 2";
+                guiText += "\n[NETWORK_MANAGER] Initialization successful";
             }
         }
         GUILayout.EndArea();

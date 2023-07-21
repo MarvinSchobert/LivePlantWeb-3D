@@ -27,36 +27,49 @@ public class NetworkConnector_Send : MonoBehaviour
 
     public void Initialize()
     {
-        manager.guiText += "\nSetting Target IP-Adress";
         IP = "192.168.137.1";
         //IP = "127.0.0.1";
         serverPort = 33333;
-
+        clientPort = manager.clientPort;
         remoteEndPoint = new IPEndPoint(IPAddress.Parse(IP), serverPort);
-        manager.guiText += "\nSuccess 0";
         client = new UdpClient();
         
         Debug.Log("Is connected to client");
-        manager.guiText += "\nSuccess 1";
         Request_Register();
         initialized = true;
-        manager.guiText += "\nSuccess 2";
     }
     public void sendObject(JObject obj)
     {
-        manager.guiText += "\nSending";
-        try
+        manager.guiText += "\n[SENDER] Sending data to Server";
+
+        // Nachricht über WebGL-Server vermitteln
+        if (manager.platform == NetworkManager.Platform.WebGL)
         {
-            byte[] data = Encoding.UTF8.GetBytes(obj.ToString());
-            client.Send(data, data.Length, remoteEndPoint);
-            manager.guiText += "\nSending Successfull";
+            sendObjectManually(obj);
         }
-        catch (Exception err)
+        else
         {
-            Debug.Log("Error");
-            manager.guiText += "Send data not Successfull " + err.ToString();
+
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(obj.ToString());
+                client.Send(data, data.Length, remoteEndPoint);
+                manager.guiText += "\nSending Successfull";
+            }
+            catch (Exception err)
+            {
+                Debug.Log("Error");
+                manager.guiText += "Send data not Successfull " + err.ToString();
+            }
         }
     }
+
+    public void sendObjectManually(JObject obj)
+    {
+
+        manager.guiText += "\nSending Successfull";
+    }
+
     public void Request_Register()
     {
         JObject rqt = new JObject();

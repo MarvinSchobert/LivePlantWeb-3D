@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class NetworkConnector_Receive : MonoBehaviour
 {
-    public int clientPort;
+    int clientPort;
     public NetworkManager manager;
     public bool initialized;
     UdpClient receivingUdpClient;
@@ -27,13 +27,15 @@ public class NetworkConnector_Receive : MonoBehaviour
     public void Initialize()
     {
         data = new List<JObject>();
-
-
-        receiveThread = new Thread(
-           new ThreadStart(ReceiveData));
-        receiveThread.IsBackground = true;
-        receiveThread.Start();
-        initialized = true;
+        clientPort = manager.clientPort;
+        if (manager.platform != NetworkManager.Platform.WebGL)
+        {
+            receiveThread = new Thread(
+               new ThreadStart(ReceiveData));
+            receiveThread.IsBackground = true;
+            receiveThread.Start();
+            initialized = true;
+        }
     }
     public void Update()
     {
@@ -43,20 +45,24 @@ public class NetworkConnector_Receive : MonoBehaviour
         }
     }
 
+    // Method for Device and messaging direct via Unity
     private void ReceiveData()
     {
         receivingUdpClient = new UdpClient(clientPort);
         RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-        manager.guiText += "\nStart ReceiveData Successfull";
+        manager.guiText += "\n[RECEIVER] Start ReceiveData Successfull";
+        Debug.Log(clientPort);
         while (true)
         {
             try
             {
+                manager.guiText += "\n[RECEIVER] In Loop";
                 // Blocks until a message returns on this socket from a remote host.
                 Byte[] receiveBytes = receivingUdpClient.Receive(ref RemoteIpEndPoint);
                 string returnData = Encoding.ASCII.GetString(receiveBytes);
 
                 JObject obj = JObject.Parse(returnData);
+                manager.guiText += "\n[RECEIVER] Got Data";
                 if (data.Count > 10 && obj["type"].ToString() != "ChangeInfo")
                 {
                     // Wenn zu viele Nachrichten eingehen, die ChangeInfos ignorieren. Alle anderen werden weiterhin berücksichtigt.
@@ -71,12 +77,15 @@ public class NetworkConnector_Receive : MonoBehaviour
             catch (Exception e)
             {
                 Debug.Log(e.ToString());
-                manager.guiText += "\nError Receive: "+e.ToString();
+                manager.guiText += "\n[NETWORK_MANAGER] Error Receive: " + e.ToString();
             }
         }
     }   
+
     void progressData(int idx)
     {
+        manager.guiText += "\n[RECEIVER] Receiving Message";
+
         switch (data[idx]["type"].ToString())
         {
             case "CREATE":                
